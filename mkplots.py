@@ -1,22 +1,29 @@
 import ROOT
-import sys
+import sys, os
 from math import sqrt
+#fin = ROOT.TFile.Open("input/"+sys.argv[1])
+outdir = "plots/"+sys.argv[2]
+if os.path.exists(outdir) == False:
+    os.mkdir(outdir) 
 fin = ROOT.TFile.Open(sys.argv[1])
+
 ROOT.gStyle.SetOptStat(0)
 
 di="kfactors_shape"
 bins = ["200_500","500_1000","1500_5000"]
+#bins = ["200_500"]
 uncerts = ["","_Renorm_Up","_Renorm_Down","_Fact_Up","_Fact_Down","_PDF_Up","_PDF_Down"]
-
-base = "kfactor_vbf_mjj_"
 cols = [1,2,4]
+base = "kfactor_vbf_mjj_"
+
+
 fcol=[ROOT.kGray,ROOT.kRed-9,ROOT.kAzure+6]
 
-haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
-haxis.GetXaxis().SetTitle("Boson p_{T} GeV")
-haxis.GetYaxis().SetTitle("NLO/LO k-factor")
-haxis.SetTitle("")
-haxis.Draw("axis")
+# haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
+# haxis.GetXaxis().SetTitle("Boson p_{T} GeV")
+# haxis.GetYaxis().SetTitle("NLO/LO k-factor")
+# haxis.SetTitle("")
+# haxis.Draw("axis")
 
 allh = []
 scaleup = []
@@ -26,18 +33,32 @@ scaledown = []
 pdfdown = []
 totaldown = []
 
+#can = ROOT.TCanvas("c","c",800,600)
+def setupCanvas(canvas, haxis, xtitle = "Boson p_{T} GeV", ytitle = "NLO/LO k-factor", ymax = 2.0, ymin = 0.4):
 
-can = ROOT.TCanvas("c","c",800,600)
-haxis.Draw("axis")
-haxis.SetMaximum(2.0)
-haxis.SetMinimum(0.5)
+    haxis.GetXaxis().SetTitle(xtitle)
+    haxis.GetYaxis().SetTitle(ytitle)
+    haxis.SetTitle("")
+    haxis.Draw("axis")
+    haxis.SetMaximum(ymax)
+    haxis.SetMinimum(ymin)
+    canvas.SetTicky()
+    canvas.SetTickx()
+    return canvas
 
 leg = ROOT.TLegend(0.5,0.6,0.87,0.87)
 leg.SetBorderSize(0)
 
+def setLegendXY(leg,x1,y1,x2,y2):
+    leg.SetX1(x1)
+    leg.SetX2(x2)
+    leg.SetY1(y1)
+    leg.SetY2(y2)
+    return leg
+
 def calculateUncertainty(lists):
     
-    for i in range(3):
+    for i in range(len(bins)):
         uncert = list(zip(*lists))[i]
         scale_up = uncert[0].Clone()
         scale_down = uncert[0].Clone()
@@ -52,7 +73,7 @@ def calculateUncertainty(lists):
             v_f_down = uncert[4].GetBinContent(b)
             v_p_up = uncert[5].GetBinContent(b)
             v_p_down = uncert[6].GetBinContent(b)
-             
+            
             v_scale_down = sqrt( (v_r_up-v_nom)**2 + (v_f_up-v_nom)**2 )
             v_scale_up = sqrt( (v_r_down-v_nom)**2 + (v_f_down-v_nom)**2 )#down causes the k-factor to reduce, so swap arbitrary meaning
 
@@ -81,7 +102,86 @@ def calculateUncertainty(lists):
   #  append to the correct list
 
   
+#Draw standard k-factor plots
+def drawStandardKFactorPlots(hists):
 
+    haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
+    can = ROOT.TCanvas("c","c",800,600)
+    can = setupCanvas(can, haxis, ymin = 0.4, ymax = 2.0)
+    for i,hist in enumerate(hists[0]):
+  
+        labs1,labs2 = bins[i].split("_")[0], bins[i].split("_")[1]
+        leg.AddEntry(hist,"%s < m_{jj} < %s GeV"%(labs1,labs2),"fpel")
+
+        total = True;
+        up = 7
+        down = 8
+        if ( total ):
+            up = 9
+            down = 10
+
+        hists[up][i].Draw("HISTsame")
+        hist.Draw("PSAME0")
+        hists[down][i].SetFillColor(10)
+        hists[down][i].Draw("HISTsame")
+        hist.Draw("PSAME0")
+
+    for i,hist in enumerate(hists[0]):
+        hist.Draw("PSAME0")
+
+
+    leg.Draw()
+    can.RedrawAxis()
+
+    can.SaveAs("plots/%s/%s.pdf"%(sys.argv[2],(sys.argv[1]).rsplit("/",1)[-1]))
+    can.SaveAs("plots/%s/%s.png"%(sys.argv[2],(sys.argv[1]).rsplit("/",1)[-1]))
+
+def drawUncertaintyPlots(hists):
+
+    default = list(zip(*hists))[0]
+#    leg.Clear()
+    can = ROOT.TCanvas("c","c",800,600)
+
+    #    haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
+    haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
+    can = setupCanvas(can, haxis, ytitle = "d#sigma/dp_{T} variation", ymin = 0.6, ymax = 1.3)
+    
+
+    uncert_list = []
+    for i in range (1,7):
+        uncert = default[i].Clone("uncert"+str(i))
+        uncert.Divide(default[0])
+        uncert.SetFillColor(0)
+        colour = i;
+        if ( colour == 5 ):
+            colour = 9
+        uncert.SetLineColor(colour)
+        uncert.SetMarkerColor(colour)
+        uncert_list.append(uncert)
+        
+    for i,hist in enumerate(uncert_list):
+        hist.Draw("HISTsame")
+        leg.AddEntry(hist,"%s %s"%(uncerts[i+1].split("_")[1], uncerts[i+1].split("_")[2]),"pl")
+        #    uncert = default[1].Clone("uncert"+str(0))
+        #    uncert.Divide(default[0]);
+        
+    setLegendXY(leg,0.55,0.13,0.8,0.35) 
+    leg.Draw()
+    #    can.Draw()
+    # can.SetTicky()
+    # can.SetTickx()
+    # can.RedrawAxis()
+    
+    # can.SetTicky()
+    # can.SetTickx()
+    #    can.RedrawAxis()
+    #    can.SaveAs("plots/%s/k-fac-uncert.pdf"%sys.argv[2])
+    
+    can.SaveAs("plots/%s/k-fac-uncert.png"%sys.argv[2])
+    can.SaveAs("plots/%s/k-fac-uncert.pdf"%sys.argv[2])
+
+    
+    
   
 def suminQuad(lists): 
   h0 = lists[0]
@@ -95,12 +195,15 @@ def suminQuad(lists):
 #    h0.SetBinError(b+1,v[b])
       h0.SetBinContent(b+1,h0.GetBinContent(b+1)+v[b])
 
+#histtype = "_fit"
+histtype = ""
+cols = cols[:len(bins)]
 for uncert in uncerts:
   temp = []
   for i,c in enumerate(cols): 
 
+    h = fin.Get("%s%s/%s%s%s"%(di,uncert,base,bins[i],histtype))
 
-    h = fin.Get("%s%s/%s%s"%(di,uncert,base,bins[i]))
     h.SetLineColor(c)
     h.SetMarkerColor(c)
     h.SetMarkerSize(1)
@@ -121,41 +224,6 @@ for uncert in uncerts:
 calculateUncertainty(allh)
 
 
-
-for i,hist in enumerate(allh[0]):
-  
-    labs1,labs2 = bins[i].split("_")[0], bins[i].split("_")[1]
-    leg.AddEntry(hist,"%s < m_{jj} < %s GeV"%(labs1,labs2),"fpel")
-
-    total = True;
-    up = 7
-    down = 8
-    if ( total ):
-        up = 9
-        down = 10
-
-    allh[up][i].Draw("HISTsame")
-    hist.Draw("PSAME")
-    allh[down][i].SetFillColor(10)
-    allh[down][i].Draw("HISTsame")
-
-  
-  # allh[7][i].SetFillColorAlpha(fcol[i],0.6)
-  # allh[8][i].SetFillColorAlpha(fcol[i],0.6)
-  # allh[9][i].SetFillColorAlpha(fcol[i],0.3)
-#  allh[7][i].Draw("HISTsame")
-#  allh[7][i].Draw("HISTsame")
-#  hist.Draw("PSAME")
-
-#  allh[8][i].Draw("HISTsame")
-#  allh[8][i].SetFillColor(10)
-#  allh[8][i].Draw("HISTsame")
-  #hist.Draw("PE2Lsame")
-  #hist.Draw("PLsame")
-   
-leg.Draw()
-can.SetTicky()
-can.SetTickx()
-can.RedrawAxis()
-can.SaveAs("%s.pdf"%fin.GetName())
+drawStandardKFactorPlots(allh)
+#drawUncertaintyPlots(allh)
 

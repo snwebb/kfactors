@@ -1,2 +1,7 @@
 input/
+plots/
+run.sh
 *~
+*.root
+*.png
+*.pdf
