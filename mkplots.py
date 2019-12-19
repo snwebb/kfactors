@@ -5,7 +5,7 @@ from math import sqrt
 outdir = "plots/"+sys.argv[2]
 if os.path.exists(outdir) == False:
     os.mkdir(outdir) 
-fin = ROOT.TFile.Open(sys.argv[1])
+fin = ROOT.TFile.Open(sys.argv[1],"READ")
 
 ROOT.gStyle.SetOptStat(0)
 
@@ -95,12 +95,26 @@ def calculateUncertainty(lists):
     lists.append(totalup)
     lists.append(totaldown)
         
-  #loop over bins edges again
-  #get the up hists, take the difference to nominal and add to a clone of the original
-  #same for the down
 
-  #  append to the correct list
+def getUncertaintyRatios(hists,region):
 
+    default = list(zip(*hists))[region]
+    ratios = []
+#    for i in range (1,7):
+    for i in range (7):
+        uncert = default[i].Clone("uncert"+str(i))
+        if (i != 0):
+            uncert.Divide(default[0])
+        uncert.SetFillColor(0)
+        colour = i;
+        if ( colour == 5 ):
+            colour = 9
+        uncert.SetLineColor(colour)
+        uncert.SetMarkerColor(colour)
+        ratios.append(uncert)
+
+    return ratios
+    
   
 #Draw standard k-factor plots
 def drawStandardKFactorPlots(hists):
@@ -138,50 +152,53 @@ def drawStandardKFactorPlots(hists):
 
 def drawUncertaintyPlots(hists):
 
-    default = list(zip(*hists))[0]
-#    leg.Clear()
+#    default = list(zip(*hists))[0]
+    leg.Clear()
     can = ROOT.TCanvas("c","c",800,600)
 
-    #    haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
     haxis = ROOT.TH1D("base",";Boson p_{T} GeV;NLO/LO k-factor",1,0,1000)
     can = setupCanvas(can, haxis, ytitle = "d#sigma/dp_{T} variation", ymin = 0.6, ymax = 1.3)
-    
 
-    uncert_list = []
-    for i in range (1,7):
-        uncert = default[i].Clone("uncert"+str(i))
-        uncert.Divide(default[0])
-        uncert.SetFillColor(0)
-        colour = i;
-        if ( colour == 5 ):
-            colour = 9
-        uncert.SetLineColor(colour)
-        uncert.SetMarkerColor(colour)
-        uncert_list.append(uncert)
-        
-    for i,hist in enumerate(uncert_list):
+ #   uncert_list = []
+    # for i in range (1,7):
+    #     uncert = default[i].Clone("uncert"+str(i))
+    #     uncert.Divide(default[0])
+    #     uncert.SetFillColor(0)
+    #     colour = i;
+    #     if ( colour == 5 ):
+    #         colour = 9
+    #     uncert.SetLineColor(colour)
+    #     uncert.SetMarkerColor(colour)
+    #     uncert_list.append(uncert)
+
+    ratios = getUncertaintyRatios(hists,0)
+    
+    for i,hist in enumerate(ratios):
+        if (i==0): continue
         hist.Draw("HISTsame")
         leg.AddEntry(hist,"%s %s"%(uncerts[i+1].split("_")[1], uncerts[i+1].split("_")[2]),"pl")
-        #    uncert = default[1].Clone("uncert"+str(0))
-        #    uncert.Divide(default[0]);
         
     setLegendXY(leg,0.55,0.13,0.8,0.35) 
     leg.Draw()
-    #    can.Draw()
-    # can.SetTicky()
-    # can.SetTickx()
-    # can.RedrawAxis()
-    
-    # can.SetTicky()
-    # can.SetTickx()
-    #    can.RedrawAxis()
-    #    can.SaveAs("plots/%s/k-fac-uncert.pdf"%sys.argv[2])
-    
     can.SaveAs("plots/%s/k-fac-uncert.png"%sys.argv[2])
     can.SaveAs("plots/%s/k-fac-uncert.pdf"%sys.argv[2])
 
+def appendFittedUncertaintyToFile(hists):
+#
+ #   default = getUncertaintyRatios(hists,0)
     
-    
+    for i,uncert in enumerate(bins):
+        ratios = getUncertaintyRatios(hists,i)
+        pol2 = ROOT.TF1("pol2","pol1",170,470)
+        for j,hist in enumerate(ratios):
+            if (j==0): continue
+            hist.Fit(pol2,"LRQ0")
+            for b in range(2,hist.GetNbinsX()+1):
+                hist.SetBinContent(b,pol2.Eval(hist.GetBinCenter(b)))
+            hist.Multiply(ratios[0])
+            fin.cd("kfactors_shape" + uncerts[j])
+            hist.Write( base + uncert + "_fit")
+            fin.cd("..")
   
 def suminQuad(lists): 
   h0 = lists[0]
@@ -195,35 +212,36 @@ def suminQuad(lists):
 #    h0.SetBinError(b+1,v[b])
       h0.SetBinContent(b+1,h0.GetBinContent(b+1)+v[b])
 
-#histtype = "_fit"
-histtype = ""
+histtype = "_fit"
+#histtype = ""
 cols = cols[:len(bins)]
 for uncert in uncerts:
-  temp = []
-  for i,c in enumerate(cols): 
+    temp = []
+    print (uncert)
+    for i,c in enumerate(cols): 
+        print (i) 
+        print ("%s%s/%s%s%s"%(di,uncert,base,bins[i],histtype))
+        h = fin.Get("%s%s/%s%s%s"%(di,uncert,base,bins[i],histtype))
+        
+        h.SetLineColor(c)
+        h.SetMarkerColor(c)
+        h.SetMarkerSize(1)
+        h.SetMarkerStyle(21)
+        temp.append(h)
+        h.SetFillColorAlpha(fcol[i],0.5)
 
-    h = fin.Get("%s%s/%s%s%s"%(di,uncert,base,bins[i],histtype))
+    allh.append(temp)
 
-    h.SetLineColor(c)
-    h.SetMarkerColor(c)
-    h.SetMarkerSize(1)
-    h.SetMarkerStyle(21)
-    temp.append(h)
-    # suminQuad([h,fin.Get("kfactors_shape_Renorm_Down/%s%s"%(base,bins[i])),fin.Get("kfactors_shape_Fact_Down/%s%s"%(base,bins[i]))])
- 
-    h.SetFillColorAlpha(fcol[i],0.5)
-    # h.Draw("PE2Lsame")
-    # h.Draw("PLsame")
 
-    # labs1,labs2 = bins[i].split("_")[0], bins[i].split("_")[1]
-    # leg.AddEntry(temp[-1],"%s < m_{jj} < %s GeV"%(labs1,labs2),"fpel")
-  allh.append(temp)
-
+  
 #Calculate uncertainty, and create "Scale Up" and "Scale Down" hists
 
 calculateUncertainty(allh)
-
-
-drawStandardKFactorPlots(allh)
 #drawUncertaintyPlots(allh)
+drawStandardKFactorPlots(allh)
+
+
+
+
+#appendFittedUncertaintyToFile(allh)
 
