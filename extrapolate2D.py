@@ -24,11 +24,6 @@ def main():
         for f in infiles:
             nominal = []
             Systs = []
-            # RenormDown = []
-            # FactUp = []
-            # FactDown = []
-            # PDFUp = []
-            # PDFDown = []
 
             filelist.append(ROOT.TFile.Open(sys.argv[1] + "/" + f + ".root","UPDATE"))
             fin = filelist[-1]
@@ -56,11 +51,10 @@ def main():
             filelist[-1].GetDirectory("/kfactors_shape/").cd()
             for n,nom in enumerate(nominal):
                        
-                if (region == "VBF"):
-                     for x in range(1,nom.GetNbinsX()+1):
+                if (region == "vbf"):
+                    for x in range(1,nom.GetNbinsX()+1):
                         nom.SetBinContent(x,1,nom.GetBinContent(x,2))#to account for events with mjj < 200
-
-                nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
+                    nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
 
             origdir.cd()
 
@@ -68,18 +62,20 @@ def main():
             for d,direc in enumerate(dirlist):
                 filelist[-1].GetDirectory("/kfactors_shape_" + direc).cd()
 
-                for n,syst in enumerate(Systs):
-                    binchoice = 6
-                    #loop over mjj bins
-                    for y in range(1,syst.GetNbinsY()+1):
-                        correction = syst.GetBinContent(binchoice,y)-nominal[0].GetBinContent(binchoice,y)
-                        for b in range(1,6):
-                            syst.SetBinContent(b, y, correction + nominal[0].GetBinContent(b,y))
+                syst = Systs[d]
+                
+                #                for n,syst in enumerate(Systs):
+                binchoice = 6
+                #loop over mjj bins
+                for y in range(1,syst.GetNbinsY()+1):
+                    correction = syst.GetBinContent(binchoice,y)-nominal[0].GetBinContent(binchoice,y)
+                    for b in range(1,6):
+                        syst.SetBinContent(b, y, correction + nominal[0].GetBinContent(b,y))
 
-                    if (region == 0):
-                        for x in range(1,syst.GetNbinsX()+1):
-                            syst.SetBinContent(x,1,syst.GetBinContent(x,2))
-                    syst.Write("kfactor_" + region,ROOT.TObject.kOverwrite )
+                if (region == "vbf"):
+                    for x in range(1,syst.GetNbinsX()+1):
+                        syst.SetBinContent(x,1,syst.GetBinContent(x,2))
+                syst.Write("kfactor_" + region,ROOT.TObject.kOverwrite )
 
                 origdir.cd()
 
