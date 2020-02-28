@@ -54,7 +54,11 @@ def main():
                 if (region == "vbf"):
                     for x in range(1,nom.GetNbinsX()+1):
                         nom.SetBinContent(x,1,nom.GetBinContent(x,2))#to account for events with mjj < 200
-                    nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
+                elif (region == "nonvbf"):
+                    for x in range(1,5):
+                        for y in range(1,nom.GetNbinsY()+1):
+                            nom.SetBinContent(x,y,nom.GetBinContent(5,y))#to account for events with boson pt < 160
+                nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
 
             origdir.cd()
 
@@ -75,6 +79,10 @@ def main():
                 if (region == "vbf"):
                     for x in range(1,syst.GetNbinsX()+1):
                         syst.SetBinContent(x,1,syst.GetBinContent(x,2))
+                if (region == "nonvbf"):
+                    for x in range(1,5):
+                        for y in range(1,syst.GetNbinsY()+1):
+                            syst.SetBinContent(x,y,syst.GetBinContent(5,y))
                 syst.Write("kfactor_" + region,ROOT.TObject.kOverwrite )
 
                 origdir.cd()

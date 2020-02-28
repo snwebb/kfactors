@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 import ROOT
 import sys
 from math import sqrt
-fin = ROOT.TFile.Open("input/"+sys.argv[1])
+fin = ROOT.TFile.Open(sys.argv[1])
 ROOT.gStyle.SetOptStat(0)
 
 di="kfactors_shape"
@@ -76,5 +77,11 @@ can.SetTicky()
 can.SetTickx()
 can.RedrawAxis()
 #can.SaveAs("%s.pdf"%fin.GetName())
-can.SaveAs("%s.pdf"%sys.argv[1])
-can.SaveAs("%s.png"%sys.argv[1])
+
+can.SaveAs("wz_1.pdf")
+can.SaveAs("wz_1.png")
+# can.SaveAs("wz_2.pdf")
+# can.SaveAs("wz_2.png")
+# can.SaveAs("%s.pdf"%sys.argv[1])
+# can.SaveAs("%s.png"%sys.argv[1])
+
