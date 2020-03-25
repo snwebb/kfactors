@@ -397,9 +397,7 @@ def loadBUHists(bins):
         allh_zbu_lo.append( z_bu_lo.ProjectionY("projz_lo" + str(i),i,i) )
         
     for hist in allh_wbu_lo:
-        #        print (hist.Integral())
         hist.Scale(1./41.,"width")
-        #       print ("getmax=",hist.GetMaximum())
     for hist in allh_wbu_nlo:
         hist.Scale(1./41.,"width")
     for hist in allh_zbu_lo:
@@ -428,7 +426,7 @@ def loadHists(infile,allh,bins):
         #    for i,c in enumerate(cols):
         h2d = fin.Get("%s%s/%s"%(di,uncert,base))
 
-        print ( "%s%s/%s"%(di,uncert,base) )
+        #print ( "%s%s/%s"%(di,uncert,base) )
         for i,b in enumerate(bins): 
             # print ("%s%s/%s%s%s"%(di,uncert,base,b,histtype))
 
@@ -467,10 +465,12 @@ def main():
     #VBF W
     base = "kfactor_vbf"
     bins_index_vbf= [2,3,5]
-    bins_vbf= ["200_500","500_1000", "1500_5000"]
-    #    bins_vbf= ["200_500","500_1000","1000_1500","1500_5000"]
+    #bins_index_vbf= [2]
+    #bins_index_vbf= [2,3,4,5]
+    #bins_vbf= ["200_500"]
+    bins_vbf= ["200_500","500_1000","1500_5000"]
     #    bins_vbf= ["1500_5000"]
-    
+        
     allh_vbf = []
     loadHists("2Dkfactor_VBF_wjet",allh_vbf,bins_index_vbf)
     calculateUncertainty(allh_vbf,bins_vbf)
@@ -496,11 +496,11 @@ def main():
     # drawBUComparisonPlots(allh_vbf_lo,allh_wbu_lo,bins_vbf,"vbf_w_nlo")
 
     #Z
-    allh_vbf = []
-    loadHists("2Dkfactor_VBF_zjet",allh_vbf,bins_index_vbf)
-    calculateUncertainty(allh_vbf,bins_vbf)
-    #drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_z")
-    drawStandardKFactorPlots(allh_vbf,bins_vbf,"kfactor_VBF_zjet_born_default")
+    allh_vbf_z = []
+    loadHists("2Dkfactor_VBF_zjet",allh_vbf_z,bins_index_vbf)
+    calculateUncertainty(allh_vbf_z,bins_vbf)
+    #drawUncertaintyPlots(allh_vbf_z,bins_vbf,"vbf_z")
+    drawStandardKFactorPlots(allh_vbf_z,bins_vbf,"kfactor_VBF_zjet_born_default")
 
     #vbf_z
 #    drawBUComparisonPlots(allh_vbf,allh_zbu,bins_vbf,"vbf_z",ymin=0.4,ymax=2.0)
@@ -522,17 +522,34 @@ def main():
 
 
     #ZNUNU
-    allh_vbf = []
-    loadHists("2Dkfactor_VBF_znn",allh_vbf,bins_index_vbf)
-    calculateUncertainty(allh_vbf,bins_vbf)
+    allh_vbf_znn = []
+    loadHists("2Dkfactor_VBF_znn",allh_vbf_znn,bins_index_vbf)
+    calculateUncertainty(allh_vbf_znn,bins_vbf)
     #drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
-    drawStandardKFactorPlots(allh_vbf,bins_vbf,"kfactor_VBF_znn_born_default")
-    allh_vbf = []
-    loadHists("2Dkfactor_VBF_znn_zll",allh_vbf,bins_index_vbf)
-    calculateUncertainty(allh_vbf,bins_vbf)
+    drawStandardKFactorPlots(allh_vbf_znn,bins_vbf,"kfactor_VBF_znn_born_default")
+    allh_vbf_znn_zll = []
+    loadHists("2Dkfactor_VBF_znn_zll",allh_vbf_znn_zll,bins_index_vbf)
+    calculateUncertainty(allh_vbf_znn_zll,bins_vbf)
     #drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
-    drawStandardKFactorPlots(allh_vbf,bins_vbf,"kfactor_VBF_znn_zll_born_default")
+    drawStandardKFactorPlots(allh_vbf_znn_zll,bins_vbf,"kfactor_VBF_znn_zll_born_default")
 
+    for i in range (3):
+        can = ROOT.TCanvas("c1","c",800,600)
+        can = setupCanvas(can, allh_vbf_z[0][i], ymin = 0.4, ymax = 2.0)
+        allh_vbf_z[0][i].SetFillColor(0)
+        allh_vbf_znn[0][i].SetFillColor(0)
+        allh_vbf_znn_zll[0][i].SetFillColor(0)
+        allh_vbf_z[0][i].SetLineColor(1)
+        allh_vbf_znn[0][i].SetLineColor(2)
+        allh_vbf_znn_zll[0][i].SetLineColor(4)
+        allh_vbf_z[0][i].Draw("HIST")
+        print (i,allh_vbf_z[0][i].GetName())
+        allh_vbf_znn[0][i].Draw("HISTsame")
+        allh_vbf_znn_zll[0][i].Draw("HISTsame")
+        can.SaveAs("plots/%s/%s_%s.png"%(sys.argv[2],"znn_comparison",bins_vbf[i]))
+        can.Close()
+
+    
 
     #VTR
     

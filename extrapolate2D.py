@@ -5,9 +5,9 @@ import sys, os
 
 def main():
 
-    infiles_vbf = [ "2Dkfactor_VBF_zjet", "2Dkfactor_VBF_wjet"]
-    infiles_vtr = [ "2Dkfactor_VTR_zjet", "2Dkfactor_VTR_wjet"]
-    infiles_nonvbf = [ "2Dkfactor_nonvbf_zjet", "2Dkfactor_nonvbf_wjet"]
+    infiles_vbf = [ "2Dkfactor_VBF_zjet", "2Dkfactor_VBF_wjet", "2Dkfactor_VBF_znn"]
+    infiles_vtr = [ "2Dkfactor_VTR_zjet", "2Dkfactor_VTR_wjet", "2Dkfactor_VTR_znn"]
+    infiles_nonvbf = [ "2Dkfactor_nonvbf_zjet", "2Dkfactor_nonvbf_wjet", "2Dkfactor_nonvbf_znn"]
     regionnames = ["vbf", "VTR", "nonvbf"]
     infiles = []
     filelist = []
@@ -50,7 +50,7 @@ def main():
             origdir = filelist[-1].GetDirectory("/")
             filelist[-1].GetDirectory("/kfactors_shape/").cd()
             for n,nom in enumerate(nominal):
-                       
+                
                 if (region == "vbf"):
                     for x in range(1,nom.GetNbinsX()+1):
                         nom.SetBinContent(x,1,nom.GetBinContent(x,2))#to account for events with mjj < 200
@@ -58,6 +58,13 @@ def main():
                     for x in range(1,5):
                         for y in range(1,nom.GetNbinsY()+1):
                             nom.SetBinContent(x,y,nom.GetBinContent(5,y))#to account for events with boson pt < 160
+
+                #Set any zero or negative k-factors to 1
+                for x in range(1,nom.GetNbinsX()+1):
+                    for y in range(1,nom.GetNbinsY()+1):
+                        if ( nom.GetBinContent(x,y) <= 0 ):
+                            nom.SetBinContent(x,y,1.)
+                
                 nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
 
             origdir.cd()
@@ -83,6 +90,14 @@ def main():
                     for x in range(1,5):
                         for y in range(1,syst.GetNbinsY()+1):
                             syst.SetBinContent(x,y,syst.GetBinContent(5,y))
+
+
+                #Set any zero or negative k-factors to 1
+                for x in range(1,syst.GetNbinsX()+1):
+                    for y in range(1,syst.GetNbinsY()+1):
+                        if ( syst.GetBinContent(x,y) <= 0 ):
+                            syst.SetBinContent(x,y,1.)
+                
                 syst.Write("kfactor_" + region,ROOT.TObject.kOverwrite )
 
                 origdir.cd()
