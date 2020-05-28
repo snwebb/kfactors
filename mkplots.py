@@ -62,7 +62,7 @@ def finaliseCanvas(canvas, haxis,maxplotted):
     haxis.Draw("same")
     return canvas
 
-def setupCanvas(canvas, haxis, xtitle = "Boson p_{T} GeV", ytitle = "NLO/LO k-factor", ymax = None, ymin = None):
+def setupCanvas(canvas, haxis, xtitle = "Boson p_{T} GeV", ytitle = "NLO/LO k-factor", ymax = None, ymin = None, gridx = False, gridy = False):
 
     haxis.GetXaxis().SetTitle(xtitle)
     haxis.GetYaxis().SetTitle(ytitle)
@@ -73,9 +73,16 @@ def setupCanvas(canvas, haxis, xtitle = "Boson p_{T} GeV", ytitle = "NLO/LO k-fa
     if ymin is not None:
         haxis.SetMinimum(ymin)
 
-
+    if (gridy):
+        canvas.SetGridy()
+    if (gridx):
+        canvas.SetGridx()
+    
     canvas.SetTicky()
     canvas.SetTickx()
+
+    haxis.Draw("axigsame")
+    
     return canvas
 
 def setupLegend():
@@ -146,7 +153,7 @@ def getUncertaintyRatios(hists,region):
         if (i != 0):
             uncert.Divide(default[0])
         uncert.SetFillColor(0)
-        colour = i;
+        colour = (i+1)//2;
         if ( colour == 5 ):
             colour = 9
         uncert.SetLineColor(colour)
@@ -170,7 +177,7 @@ def drawStandardKFactorPlots(hists,bins,plotname="plot"):
 
     can = ROOT.TCanvas("c1","c",800,600)
     #    can = ROOT.TCanvas("c1","c",1600,1200)
-    can = setupCanvas(can, haxis, ymin = 0.4, ymax = 2.0, xtitle = xaxis)
+    can = setupCanvas(can, haxis, ymin = 0.4, ymax = 2.2, xtitle = xaxis)
     for i,hist in enumerate(hists[0]):
         if ( analysis == "vbf" ):
             labs1,labs2 = bins[i].split("_")[0], bins[i].split("_")[1]
@@ -265,41 +272,42 @@ def drawBUComparisonPlots(hists,bu,bins,plotname,ymin = None, ymax = None):
 def drawUncertaintyPlots(hists,bins,plotname):
 
 #    default = list(zip(*hists))[0]
-    leg = setupLegend()
-    can = ROOT.TCanvas("c2","c",800,600)
 
+
+    legend_entries = ["Renormalisation Scale","Renormalisation Scale","Factorisation Scale","Factorisation Scale","PDF","PDF"]
     xaxis = "Boson p_{T} [GeV]"
     if ( bins[0] == "gen_jetp0" ):
         xaxis = "Leading jet p_{T} [GeV]"
-    haxis = ROOT.TH1D("base",";"+xaxis+";NLO/LO k-factor",1,0,1000)
-    can = setupCanvas(can, haxis, ytitle = "d#sigma/dp_{T} variation", ymin = 0.6, ymax = 1.3, xtitle = xaxis)
-    #can = setupCanvas(can, haxis, ytitle = "d#sigma/dp_{T} variation", ymin = 0, ymax = 2.6)
 
- #   uncert_list = []
-    # for i in range (1,7):
-    #     uncert = default[i].Clone("uncert"+str(i))
-    #     uncert.Divide(default[0])
-    #     uncert.SetFillColor(0)
-    #     colour = i;
-    #     if ( colour == 5 ):
-    #         colour = 9
-    #     uncert.SetLineColor(colour)
-    #     uncert.SetMarkerColor(colour)
-    #     uncert_list.append(uncert)
 
-    ratios = getUncertaintyRatios(hists,0)
-    for i,hist in enumerate(ratios):
-        if (i==0):
-            continue
-        hist.Draw("HISTsame")
-        leg.AddEntry(hist,"%s %s"%(uncerts[i].split("_")[1], uncerts[i].split("_")[2]),"pl")
+    for j,b in enumerate(bins): 
+        haxis = ROOT.TH1D("base"+str(j),";"+xaxis+";NLO/LO k-factor",1,0,1000)
+
+        ratios = getUncertaintyRatios(hists,j)
+
+        can = ROOT.TCanvas("c"+str(j),"c",800,600)
+        can = setupCanvas(can, haxis, ytitle = "d#sigma/dp_{T} variation", ymin = 0.65, ymax = 1.25, xtitle = xaxis, gridx = True, gridy = True)
+        leg = setupLegend()
+
         
-    setLegendXY(leg,0.55,0.13,0.8,0.35) 
-    leg.Draw()
-    can.SaveAs("plots/%s/k-fac-uncert-%s.png"%(sys.argv[2],plotname))
-    can.SaveAs("plots/%s/k-fac-uncert-%s.root"%(sys.argv[2],plotname))
-    can.SaveAs("plots/%s/k-fac-uncert-%s.pdf"%(sys.argv[2],plotname))
-    can.Close()
+        for i,hist in enumerate(ratios):
+            if (i==0):
+                continue            
+            hist.Draw("HISTsame")
+            if ( i%2 == 0 ):
+                #leg.AddEntry(hist,"%s %s"%(uncerts[i].split("_")[1], uncerts[i].split("_")[2]),"pl")
+                #leg.AddEntry(hist,"%s"%(uncerts[i].split("_")[1]),"pl")
+                leg.AddEntry(hist,"%s"%(legend_entries[i-1]),"pl")
+        
+        setLegendXY(leg,0.55,0.13,0.89,0.4) 
+        leg.Draw()
+        can.SaveAs("plots/%s/k-fac-uncert-%s-%s.png"%(sys.argv[2],plotname,b))
+        can.SaveAs("plots/%s/k-fac-uncert-%s-%s.root"%(sys.argv[2],plotname,b))
+        can.SaveAs("plots/%s/k-fac-uncert-%s-%s.pdf"%(sys.argv[2],plotname,b))
+        #can.Clear()
+        can.Close()
+
+        
     
 # def appendFittedUncertaintyToFile(hists):
 # #
@@ -474,7 +482,7 @@ def main():
     allh_vbf = []
     loadHists("2Dkfactor_VBF_wjet",allh_vbf,bins_index_vbf)
     calculateUncertainty(allh_vbf,bins_vbf)
-    #drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
+    drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
     drawStandardKFactorPlots(allh_vbf,bins_vbf,"kfactor_VBF_wjet_born_default")
     
     #loadBUHists(bins_vbf)
@@ -499,7 +507,7 @@ def main():
     allh_vbf_z = []
     loadHists("2Dkfactor_VBF_zjet",allh_vbf_z,bins_index_vbf)
     calculateUncertainty(allh_vbf_z,bins_vbf)
-    #drawUncertaintyPlots(allh_vbf_z,bins_vbf,"vbf_z")
+    drawUncertaintyPlots(allh_vbf_z,bins_vbf,"vbf_z")
     drawStandardKFactorPlots(allh_vbf_z,bins_vbf,"kfactor_VBF_zjet_born_default")
 
     #vbf_z
@@ -525,8 +533,9 @@ def main():
     allh_vbf_znn = []
     loadHists("2Dkfactor_VBF_znn",allh_vbf_znn,bins_index_vbf)
     calculateUncertainty(allh_vbf_znn,bins_vbf)
-    #drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
+    drawUncertaintyPlots(allh_vbf_znn,bins_vbf,"vbf_znn")
     drawStandardKFactorPlots(allh_vbf_znn,bins_vbf,"kfactor_VBF_znn_born_default")
+
     allh_vbf_znn_zll = []
     loadHists("2Dkfactor_VBF_znn_zll",allh_vbf_znn_zll,bins_index_vbf)
     calculateUncertainty(allh_vbf_znn_zll,bins_vbf)
