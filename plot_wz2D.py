@@ -26,8 +26,6 @@ fcol=[ROOT.kGray,ROOT.kGray,ROOT.kRed-9,ROOT.kRed-9,ROOT.kAzure+6,ROOT.kAzure+6,
 
 can = ROOT.TCanvas("c","c",800,600)
 # haxis.Draw("axis")
-# haxis.SetMaximum(1.5)
-# haxis.SetMinimum(0.7)
 
 
 def loadHists(infile,allhists,bins):
@@ -45,47 +43,63 @@ def loadHists(infile,allhists,bins):
             h.SetMarkerColor(cols[i])
             h.SetMarkerSize(1)
             h.SetMarkerStyle(21)
-            h.SetFillColorAlpha(fcol[i],0.5)
+            #h.SetFillColorAlpha(fcol[i],0.5)
             temp.append(h)
 
 
         allhists.append(temp)
             
-def plotUncertainty(allhists,bins):
+def plotUncertainty(allhists,bins,name,maxi=1.5,mini=0.7):
 
     allhists_swap = list(zip(*allhists))
     leg = ROOT.TLegend(0.5,0.6,0.87,0.87)
     leg.SetBorderSize(0)
-    for i,uncert in enumerate(uncerts):
-        
-        for b,binn in enumerate(bins):
 
-            for i,hist in enumerate(allhists_swap[b]):
-                labs1,labs2,labs3 = uncerts[i].split("-")[1], uncerts[i].split("-")[2], uncerts[i].split("-")[0]
-                leg.AddEntry(hist,"%s %s %s"%(labs1,labs2,labs3),"pl")
-                hist.Draw("HISTSAME")
-                hist.SetTitle("Boson p_{T} GeV; W/Z ratio [syst] / W/Z ratio[nominal]")
-            leg.Draw()
-            can.SetTicky()
-            can.SetTickx()
-            can.RedrawAxis()
+    for b,hists in enumerate(allhists_swap):
 
-            can.SaveAs(outdir + "wz_"+binn+".pdf")
-            can.SaveAs(outdir + "wz_"+binn+".png")
-            can.Clear()
-            leg.Clear()
+        for i,hist in enumerate(hists):
+            
+            labs1,labs2,labs3 = uncerts[i].split("-")[1], uncerts[i].split("-")[2], uncerts[i].split("-")[0]
+            if ( i%2 == 0):leg.AddEntry(hist,"%s %s"%(labs1,labs3),"pl")
+            if (i==0):hist.Draw("HIST")
+            else:hist.Draw("HISTSAME")
+            hist.SetMaximum(maxi)
+            hist.SetMinimum(mini)
+            hist.SetTitle(";Boson p_{T} GeV;W/Z ratio [syst] / W/Z ratio[nominal]")
+
+
+        leg.Draw()
+        can.SetTicky()
+        can.SetTickx()
+        can.RedrawAxis()
+
+        can.SaveAs(outdir + name + "_wz_"+bins[b]+".pdf")
+        can.SaveAs(outdir + name + "_wz_"+bins[b]+".png")
+        can.Clear()
+        leg.Clear()
 
 
 #Calculate uncertainty, and create "Scale Up" and "Scale Down" hists
 
-allh = []
+# allh = []
+# infile = "2D-wz-ratio-uncertainty"
+# bins_vbf= ["200_500","500_1000","1500_5000"]
+# bins = [2,3,5]
+# loadHists(infile,allh,bins)
+# plotUncertainty(allh,bins_vbf,"standard")
+
 infile = "2D-wz-ratio-uncertainty"
 bins_vbf= ["200_500","500_1000","1500_5000"]
 bins = [2,3,5]
+allh = []
+uncerts = ["FlavourSep-Renorm-Up","FlavourSep-Renorm-Down","Corr-Renorm-Up","Corr-Renorm-Down","Uncorr-Renorm-Up","Uncorr-Renorm-Down","Wup-Renorm-Up","Wup-Renorm-Down"]
 loadHists(infile,allh,bins)
-plotUncertainty(allh,bins_vbf)
+plotUncertainty(allh,bins_vbf,"renorm",maxi=1.5,mini=0.7)
 
-
+allh = []
+uncerts = ["FlavourSep-Fact-Up","FlavourSep-Fact-Down","Corr-Fact-Up","Corr-Fact-Down","Uncorr-Fact-Up","Uncorr-Fact-Down","Wup-Fact-Up","Wup-Fact-Down"]
+loadHists(infile,allh,bins)
+plotUncertainty(allh,bins_vbf,"fact",maxi=1.2,mini=0.9)
 
 
 #Draw Plots

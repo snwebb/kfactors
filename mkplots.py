@@ -17,8 +17,8 @@ ROOT.gStyle.SetImageScaling(3.)
 analysis = "vbf"
 di="kfactors_shape"
 base = "kfactor_vbf_mjj_"
-cols = [1,2,4,6]
-fcol=[ROOT.kGray,ROOT.kRed-9,ROOT.kAzure+6,ROOT.kMagenta]
+cols = [1,2,4,8]
+fcol=[ROOT.kGray,ROOT.kRed-9,ROOT.kAzure+6,ROOT.kGreen-9]
 
 # if ( sys.argv[1].find("nonVBF")!=-1 ):
 #     analysis = "nonvbf"
@@ -178,6 +178,7 @@ def drawStandardKFactorPlots(hists,bins,plotname="plot"):
     can = ROOT.TCanvas("c1","c",800,600)
     #    can = ROOT.TCanvas("c1","c",1600,1200)
     can = setupCanvas(can, haxis, ymin = 0.4, ymax = 2.2, xtitle = xaxis)
+    #can = setupCanvas(can, haxis, ymin = 0, ymax = 2.2, xtitle = xaxis)
     for i,hist in enumerate(hists[0]):
         if ( analysis == "vbf" ):
             labs1,labs2 = bins[i].split("_")[0], bins[i].split("_")[1]
@@ -472,11 +473,15 @@ def main():
     
     #VBF W
     base = "kfactor_vbf"
-    bins_index_vbf= [2,3,5]
+    # bins_index_vbf= [2,3,5]
+    # bins_vbf= ["200_500","500_1000","1500_5000"]
+
     #bins_index_vbf= [2]
-    #bins_index_vbf= [2,3,4,5]
+
     #bins_vbf= ["200_500"]
-    bins_vbf= ["200_500","500_1000","1500_5000"]
+
+    bins_index_vbf= [2,3,4,5]
+    bins_vbf= ["200_500","500_1000","1000_1500","1500_5000"]
     #    bins_vbf= ["1500_5000"]
         
     allh_vbf = []
