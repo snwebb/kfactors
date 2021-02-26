@@ -7,7 +7,7 @@ def main():
 
     infiles_vbf = [ "2Dkfactor_VBF_zjet", "2Dkfactor_VBF_wjet", "2Dkfactor_VBF_znn"]
     infiles_vtr = [ "2Dkfactor_VTR_zjet", "2Dkfactor_VTR_wjet", "2Dkfactor_VTR_znn"]
-    infiles_nonvbf = [ "2Dkfactor_nonvbf_zjet", "2Dkfactor_nonvbf_wjet", "2Dkfactor_nonvbf_znn"]
+    infiles_nonvbf = [ "2Dkfactor_nonVBF_zjet", "2Dkfactor_nonVBF_wjet", "2Dkfactor_nonVBF_znn", "2Dkfactor16_nonVBF_zjet", "2Dkfactor16_nonVBF_wjet", "2Dkfactor16_nonVBF_znn","2Dkfactor_nonVBF_njet_zjet", "2Dkfactor_nonVBF_njet_wjet", "2Dkfactor_nonVBF_njet_znn", "2Dkfactor16_nonVBF_njet_zjet", "2Dkfactor16_nonVBF_njet_wjet", "2Dkfactor16_nonVBF_znn"]
     regionnames = ["vbf", "VTR", "nonvbf"]
     infiles = []
     filelist = []

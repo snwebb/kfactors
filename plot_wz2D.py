@@ -9,7 +9,6 @@ filelist = []
 outdir = "plots/" + sys.argv[2] + "/"
 subprocess.call("mkdir -p " + outdir,shell=True)
 
-#fin = ROOT.TFile.Open(sys.argv[1])
 ROOT.gStyle.SetOptStat(0)
 
 di="kfactors_shape"
@@ -19,14 +18,7 @@ base = "WZRatio"
 
 fcol=[ROOT.kGray,ROOT.kGray,ROOT.kRed-9,ROOT.kRed-9,ROOT.kAzure+6,ROOT.kAzure+6,ROOT.kMagenta+2,ROOT.kMagenta+2]
 
-# haxis = ROOT.TH1D("base",";Boson p_{T} GeV; W/Z ratio [syst] / W/Z ratio[nominal]",1,0,1000)
-# haxis.SetTitle("")
-# haxis.Draw("axis")
-
-
 can = ROOT.TCanvas("c","c",800,600)
-# haxis.Draw("axis")
-
 
 def loadHists(infile,allhists,bins):
 
@@ -43,9 +35,7 @@ def loadHists(infile,allhists,bins):
             h.SetMarkerColor(cols[i])
             h.SetMarkerSize(1)
             h.SetMarkerStyle(21)
-            #h.SetFillColorAlpha(fcol[i],0.5)
             temp.append(h)
-
 
         allhists.append(temp)
             
