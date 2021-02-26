@@ -1,8 +1,6 @@
 import ROOT
 import sys, os
 
-
-
 def main():
 
     infiles_vbf = [ "2Dkfactor_VBF_zjet", "2Dkfactor_VBF_wjet", "2Dkfactor_VBF_znn"]
@@ -74,8 +72,6 @@ def main():
                 filelist[-1].GetDirectory("/kfactors_shape_" + direc).cd()
 
                 syst = Systs[d]
-                
-                #                for n,syst in enumerate(Systs):
                 binchoice = 6
                 #loop over mjj bins
                 for y in range(1,syst.GetNbinsY()+1):
@@ -91,7 +87,6 @@ def main():
                         for y in range(1,syst.GetNbinsY()+1):
                             syst.SetBinContent(x,y,syst.GetBinContent(5,y))
 
-
                 #Set any zero or negative k-factors to 1
                 for x in range(1,syst.GetNbinsX()+1):
                     for y in range(1,syst.GetNbinsY()+1):
@@ -104,7 +99,5 @@ def main():
 
             fin.Close()
 
-
-    
             
 main()

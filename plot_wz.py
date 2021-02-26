@@ -6,9 +6,7 @@ fin = ROOT.TFile.Open(sys.argv[1])
 ROOT.gStyle.SetOptStat(0)
 
 di="kfactors_shape"
-#uncerts = ["","_Renorm_Up","_Renorm_Down","_Fact_Up","_Fact_Down","_PDF_Up","_PDF_Down"]
 uncerts = ["Corr-Renorm-Up","Corr-Renorm-Down","Corr-Fact-Up","Corr-Fact-Down","Uncorr-Renorm-Up","Uncorr-Renorm-Down","Uncorr-Fact-Up","Uncorr-Fact-Down"]
-#uncerts = ["Wup-Renorm-Up","Wup-Renorm-Down","Wup-Fact-Up","Wup-Fact-Down","Zup-Renorm-Up","Zup-Renorm-Down","Zup-Fact-Up","Zup-Fact-Down"]
 
 cols = [1,1,2,2,4,4,6,6]
 base = "WZRatio"
@@ -57,7 +55,7 @@ for i,uncert in enumerate(uncerts):
     h.SetMarkerStyle(21)
     allh.append(h)
 
-#Calculate uncertainty, and create "Scale Up" and "Scale Down" hists
+    #Calculate uncertainty, and create "Scale Up" and "Scale Down" hists
   
     labs1,labs2,labs3 = uncerts[i].split("-")[1], uncerts[i].split("-")[2], uncerts[i].split("-")[0]
     leg.AddEntry(h,"%s %s %s"%(labs1,labs2,labs3),"pl")
@@ -72,8 +70,3 @@ can.RedrawAxis()
 
 can.SaveAs("wz_1.pdf")
 can.SaveAs("wz_1.png")
-# can.SaveAs("wz_2.pdf")
-# can.SaveAs("wz_2.png")
-# can.SaveAs("%s.pdf"%sys.argv[1])
-# can.SaveAs("%s.png"%sys.argv[1])
-

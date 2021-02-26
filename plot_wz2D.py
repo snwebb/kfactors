@@ -71,26 +71,11 @@ def plotUncertainty(allhists,bins,name,maxi=1.5,mini=0.7):
 
 #Calculate uncertainty, and create "Scale Up" and "Scale Down" hists
 
-# allh = []
-# infile = "2D-wz-ratio-uncertainty"
-# bins_vbf= ["200_500","500_1000","1500_5000"]
-# bins = [2,3,5]
-# loadHists(infile,allh,bins)
-# plotUncertainty(allh,bins_vbf,"standard")
-
+allh = []
 infile = "2D-wz-ratio-uncertainty"
 bins_vbf= ["200_500","500_1000","1500_5000"]
 bins = [2,3,5]
-allh = []
-uncerts = ["FlavourSep-Renorm-Up","FlavourSep-Renorm-Down","Corr-Renorm-Up","Corr-Renorm-Down","Uncorr-Renorm-Up","Uncorr-Renorm-Down","Wup-Renorm-Up","Wup-Renorm-Down"]
 loadHists(infile,allh,bins)
-plotUncertainty(allh,bins_vbf,"renorm",maxi=1.5,mini=0.7)
+plotUncertainty(allh,bins_vbf,"standard")
 
-allh = []
-uncerts = ["FlavourSep-Fact-Up","FlavourSep-Fact-Down","Corr-Fact-Up","Corr-Fact-Down","Uncorr-Fact-Up","Uncorr-Fact-Down","Wup-Fact-Up","Wup-Fact-Down"]
-loadHists(infile,allh,bins)
-plotUncertainty(allh,bins_vbf,"fact",maxi=1.2,mini=0.9)
-
-
-#Draw Plots
 

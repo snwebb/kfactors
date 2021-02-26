@@ -6,9 +6,6 @@ outdir = "plots/"+sys.argv[2]
 if os.path.exists(outdir) == False:
     os.mkdir(outdir) 
 
-fin_bu = ROOT.TFile.Open("2017_gen_v_pt_qcd_sf_20200122.root","READ")
-fin_bu_component = ROOT.TFile.Open(" 2d_gen_vpt_mjj.root", "READ")
-
 filelist = []
 ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetImageScaling(3.)
@@ -21,12 +18,6 @@ fcol=[ROOT.kGray,ROOT.kRed-9,ROOT.kAzure+6,ROOT.kGreen-9]
 
 uncerts = ["","_Renorm_Up","_Renorm_Down","_Fact_Up","_Fact_Down","_PDF_Up","_PDF_Down"]
 
-allh_wbu = []
-allh_zbu = []
-allh_wbu_lo = []
-allh_zbu_lo = []
-allh_wbu_nlo = []
-allh_zbu_nlo = []
 allh_w_lo = []
 allh_z_lo = []
 allh_w_nlo = []
@@ -187,43 +178,6 @@ def drawStandardKFactorPlots(hists,bins,plotname="plot"):
     can.Close()
     
 
-def drawBUComparisonPlots(hists,bu,bins,plotname,ymin = None, ymax = None):
-
-    maxplotted = 0
-    can = ROOT.TCanvas("c1","c",800,600)
-
-    leg = setupLegend()
-    xaxis = "Boson p_{T} [GeV]"
-    if ( bins[0] == "gen_jetp0" ):
-        xaxis = "Leading jet p_{T} [GeV]"
-    haxis = ROOT.TH1D("base",";"+xaxis+";NLO/LO k-factor",1,0,1000)
-
-    
-    for i,hist in enumerate(hists[0]):
-
-        can.Clear()
-        leg.Clear()
-        can = setupCanvas(can, haxis, ymin = ymin, ymax = ymax, xtitle = xaxis)
-
-        if ( analysis == "vbf" ):
-            labs1,labs2 = bins[i].split("_")[0], bins[i].split("_")[1]
-            leg.AddEntry(hist,"%s < m_{jj} < %s GeV"%(labs1,labs2),"fpel")
-
-        maxplotted = hist.GetMaximum()*1.2
-        hist.Draw("PSAME0")
-        bu[i].Draw("HISTSAME")
-
-        if ( analysis == "vbf" ):
-            leg.Draw()
-
-        if (ymax is None):
-            can = finaliseCanvas(can, haxis,maxplotted)
-        can.RedrawAxis()
-
-        can.SaveAs("plots/%s/comparison_%s_%s.pdf"%(sys.argv[2],bins[i],plotname))
-        can.SaveAs("plots/%s/comparison_%s_%s.png"%(sys.argv[2],bins[i],plotname))
-        can.SaveAs("plots/%s/comparison_%s_%s.root"%(sys.argv[2],bins[i],plotname))
-
     
 def drawUncertaintyPlots(hists,bins,plotname):
 
@@ -257,8 +211,6 @@ def drawUncertaintyPlots(hists,bins,plotname):
         can.SaveAs("plots/%s/k-fac-uncert-%s-%s.pdf"%(sys.argv[2],plotname,b))
         can.Close()
 
-        
-  
 def suminQuad(lists): 
   h0 = lists[0]
   v = [0 for b in range(h0.GetNbinsX())]
@@ -278,63 +230,6 @@ def loadGeneralHist(filename,histnames,outlist):
         outlist.append(h)
 
     
-def loadBUHists(bins):
-
-    #Get BU Central Values    
-    w_bu = (fin_bu.Get("2d_wjet_vbf"))
-    z_bu = (fin_bu.Get("2d_dy_vbf"))
-
-    w_bu_lo = (fin_bu_component.Get("wjet_lo_gen_vpt_mjj"))
-    w_bu_nlo = (fin_bu_component.Get("wjet_nlo_gen_vpt_mjj"))
-    z_bu_lo = (fin_bu_component.Get("dy_lo_gen_vpt_mjj"))
-    z_bu_nlo = (fin_bu_component.Get("dy_nlo_gen_vpt_mjj"))
-
-    inlist_w_lo=[]
-    inlist_w_nlo=[]
-    inlist_z_lo=[]
-    inlist_z_nlo=[]
-    #Form hist lists
-    for b in bins:
-        inlist_w_lo.append("W_Nominal_LO/VBF_MJJ_%s"%(b))
-        inlist_w_nlo.append("W_Nominal_NLO/VBF_MJJ_%s"%(b))
-        inlist_z_lo.append("Z_Nominal_LO/VBF_MJJ_%s"%(b))
-        inlist_z_nlo.append("Z_Nominal_NLO/VBF_MJJ_%s"%(b))
-
-    loadGeneralHist( "NLO_plots" , inlist_w_lo, allh_w_lo )
-    loadGeneralHist( "NLO_plots" , inlist_w_nlo, allh_w_nlo )
-    loadGeneralHist( "NLO_plots" , inlist_z_lo, allh_z_lo )
-    loadGeneralHist( "NLO_plots" , inlist_z_nlo, allh_z_nlo )
-        
-    for hist in allh_w_lo:
-        hist.Scale(1)
-    for hist in allh_w_nlo:
-        hist.Scale(1)
-    for hist in allh_z_lo:
-        hist.Scale(1)
-    for hist in allh_z_nlo:
-        hist.Scale(1)
-
-        
-    #for i in range (2,6):
-    for i in range (1,6):
-        allh_wbu.append( w_bu.ProjectionY("projw" + str(i),i,i) )
-        allh_zbu.append( z_bu.ProjectionY("projz" + str(i),i,i) )
-
-    for i in range (1,5):
-        allh_wbu_nlo.append( w_bu_nlo.ProjectionY("projw_nlo" + str(i),i,i) )
-        allh_zbu_nlo.append( z_bu_nlo.ProjectionY("projz_nlo" + str(i),i,i) )
-        allh_wbu_lo.append( w_bu_lo.ProjectionY("projw_lo" + str(i),i,i) )
-        allh_zbu_lo.append( z_bu_lo.ProjectionY("projz_lo" + str(i),i,i) )
-        
-    for hist in allh_wbu_lo:
-        hist.Scale(1./41.,"width")
-    for hist in allh_wbu_nlo:
-        hist.Scale(1./41.,"width")
-    for hist in allh_zbu_lo:
-        hist.Scale(1./41.,"width")
-    for hist in allh_zbu_nlo:
-        hist.Scale(1./41.,"width")
-
         
 def loadHists(infile,allh,bins):
     #print (base)
@@ -370,101 +265,60 @@ def main():
     name_vtr = "kfactor_VTR"
 
     global base,analysis
+
+    ##    MTR    ##
     
-    #VBF W
     base = "kfactor_vbf"
     bins_index_vbf= [2,3,4,6]
     bins_vbf= ["200_500","500_1000","1000_1500","2000_5000"]
-        
+
+    #VBF W
     allh_vbf = []
-    loadHists("2Dkfactor_VBF_wjet",allh_vbf,bins_index_vbf)
-    calculateUncertainty(allh_vbf,bins_vbf)
-    drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
-    drawStandardKFactorPlots(allh_vbf,bins_vbf,"kfactor_VBF_wjet_born_default")
+    # load the relevant 2D k-factor histograms
+    loadHists("2Dkfactor_VBF_wjet",allh_vbf,bins_index_vbf) 
+    # calculate the uncertainty
+    calculateUncertainty(allh_vbf,bins_vbf) 
+    # draw the note uncertainty plots
+    drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w") 
+    # draw k-factor plots, where the k-factor in each mjj bin is plotted on the same 1D plot vs boson pT
+    drawStandardKFactorPlots(allh_vbf,bins_vbf,"kfactor_VBF_wjet_born_default") 
     
-    #loadBUHists(bins_vbf)
-    #drawBUComparisonPlots(allh_vbf,allh_wbu,bins_vbf,"vbf_w",ymin=0.4,ymax=2.0)
-
-    # allh_vbf = []
-    # loadHists("PtBinned_kfactor_VBF_wjet",allh_vbf,bins_vbf)
-    # calculateUncertainty(allh_vbf,bins_vbf)
-    # drawUncertaintyPlots(allh_vbf,bins_vbf,"ptbinned_vbf_w")
-    # drawStandardKFactorPlots(allh_vbf,bins_vbf,"PtBinned_kfactor_VBF_wjet_born")
-
-
-
-    # allh_vbf_lo = []
-    # allh_vbf_lo.append(allh_w_lo)
-    # drawBUComparisonPlots(allh_vbf_lo,allh_wbu_lo,bins_vbf,"vbf_w_lo")
-    # allh_vbf_lo = []
-    # allh_vbf_lo.append(allh_w_nlo)
-    # drawBUComparisonPlots(allh_vbf_lo,allh_wbu_lo,bins_vbf,"vbf_w_nlo")
-
-    #Z
+    #VBF DY
     allh_vbf_z = []
     loadHists("2Dkfactor_VBF_zjet",allh_vbf_z,bins_index_vbf)
     calculateUncertainty(allh_vbf_z,bins_vbf)
     drawUncertaintyPlots(allh_vbf_z,bins_vbf,"vbf_z")
     drawStandardKFactorPlots(allh_vbf_z,bins_vbf,"kfactor_VBF_zjet_born_default")
 
-    #vbf_z
-#    drawBUComparisonPlots(allh_vbf,allh_zbu,bins_vbf,"vbf_z",ymin=0.4,ymax=2.0)
 
-    # allh_vbf = []
-    # loadHists("PtBinned_kfactor_VBF_zjet",allh_vbf,bins_vbf)
-    # calculateUncertainty(allh_vbf,bins_vbf)
-    # drawUncertaintyPlots(allh_vbf,bins_vbf,"ptbinned_vbf_z")
-    # drawStandardKFactorPlots(allh_vbf,bins_vbf,"PtBinned_kfactor_VBF_zjet_born")
-
-
-
-    # allh_vbf_lo = []
-    # allh_vbf_lo.append(allh_z_lo)
-    # drawBUComparisonPlots(allh_vbf_lo,allh_zbu_lo,bins_vbf,"vbf_z_lo")
-    # allh_vbf_lo = []
-    # allh_vbf_lo.append(allh_z_nlo)
-    # drawBUComparisonPlots(allh_vbf_lo,allh_zbu_lo,bins_vbf,"vbf_z_nlo")
-
-
-    #ZNUNU
+    #VBF ZNN
     allh_vbf_znn = []
     loadHists("2Dkfactor_VBF_znn",allh_vbf_znn,bins_index_vbf)
     calculateUncertainty(allh_vbf_znn,bins_vbf)
     drawUncertaintyPlots(allh_vbf_znn,bins_vbf,"vbf_znn")
     drawStandardKFactorPlots(allh_vbf_znn,bins_vbf,"kfactor_VBF_znn_born_default")
 
-    # allh_vbf_znn_zll = []
-    # loadHists("2Dkfactor_VBF_znn_zll",allh_vbf_znn_zll,bins_index_vbf)
-    # calculateUncertainty(allh_vbf_znn_zll,bins_vbf)
-    # #drawUncertaintyPlots(allh_vbf,bins_vbf,"vbf_w")
-    # drawStandardKFactorPlots(allh_vbf_znn_zll,bins_vbf,"kfactor_VBF_znn_zll_born_default")
-
     for i in range (3):
         can = ROOT.TCanvas("c1","c",800,600)
         can = setupCanvas(can, allh_vbf_z[0][i], ymin = 0.4, ymax = 2.0)
         allh_vbf_z[0][i].SetFillColor(0)
         allh_vbf_znn[0][i].SetFillColor(0)
-        #allh_vbf_znn_zll[0][i].SetFillColor(0)
         allh_vbf_z[0][i].SetLineColor(1)
         allh_vbf_znn[0][i].SetLineColor(2)
-        #allh_vbf_znn_zll[0][i].SetLineColor(4)
         allh_vbf_z[0][i].Draw("HIST")
-        print (i,allh_vbf_z[0][i].GetName())
         allh_vbf_znn[0][i].Draw("HISTsame")
-        #allh_vbf_znn_zll[0][i].Draw("HISTsame")
         can.SaveAs("plots/%s/%s_%s.png"%(sys.argv[2],"znn_comparison",bins_vbf[i]))
         can.Close()
 
-    
+    ##    MTR    ##
 
-    #VTR
-    
     bins_boson_pt = ["boson_pt"]
     base = "kfactor_VTR"
     analysis = "vtr"
     allh_vbf = []
     bins_index_vtr= [1]
     bins_vtr= ["900_5000"]
+
     loadHists("2Dkfactor_VTR_wjet",allh_vbf,bins_index_vtr)
     calculateUncertainty(allh_vbf,bins_vtr)
     drawUncertaintyPlots(allh_vbf,bins_vtr,"vtr_w")
@@ -479,57 +333,6 @@ def main():
     calculateUncertainty(allh_vbf,bins_vtr)
     drawUncertaintyPlots(allh_vbf,bins_vtr,"vtr_znn")
     drawStandardKFactorPlots(allh_vbf,bins_vtr,"kfactor_VTR_znn_born_default")
-    # allh_vbf = []
-    # loadHists("2Dkfactor_VTR_znn_zll",allh_vbf,bins_index_vtr)
-    # calculateUncertainty(allh_vbf,bins_vtr)
-    # #drawUncertaintyPlots(allh_vbf,bins_vtr,"vtr_z")
-    # drawStandardKFactorPlots(allh_vbf,bins_vtr,"kfactor_VTR_znn_zll_born_default")
-
-
-
-    
-    # # #NON VBF 
-    # ####global base
-    # base = "kfactor_nonvbf_"
-
-    # bins_jetpt = ["gen_jetp0"]
-
-    # #W
-    # allh_nonvbf = []
-    # loadHists("kfactor_nonVBF_wjet",allh_nonvbf,bins_boson_pt)
-    # calculateUncertainty(allh_nonvbf,bins_boson_pt)    
-    # drawStandardKFactorPlots(allh_nonvbf,bins_boson_pt,"nonvbf_bosonpt_w")
-    # allh_nonvbf = []
-    # loadHists("kfactor_nonVBF_wjet",allh_nonvbf, bins_jetpt)
-    # calculateUncertainty(allh_nonvbf,bins_jetpt)    
-    # drawStandardKFactorPlots(allh_nonvbf,bins_jetpt,"nonvbf_jetpt_w")
-    # #Z
-    # allh_nonvbf = []
-    # loadHists("kfactor_nonVBF_zjet",allh_nonvbf,bins_boson_pt)
-    # calculateUncertainty(allh_nonvbf,bins_boson_pt)    
-    # drawStandardKFactorPlots(allh_nonvbf,bins_boson_pt,"nonvbf_bosonpt_z")
-    # allh_nonvbf = []
-    # loadHists("kfactor_nonVBF_zjet",allh_nonvbf, bins_jetpt)
-    # calculateUncertainty(allh_nonvbf,bins_jetpt)    
-    # drawStandardKFactorPlots(allh_nonvbf,bins_jetpt,"nonvbf_jetpt_z")
-
-
-
-
-
-
-    
-
-    
-    #        drawUncertaintyPlots(allh_nonvbf_boson,bins_boson_pt)
-    # calculateUncertainty(allh_nonvbf_jet,bins_jetpt)
-    # drawStandardKFactorPlots(allh_nonvbf_jet,bins_boson_pt)
-    #        drawUncertaintyPlots(allh_nonvbf_jet,bins_jetpt)
-
-
-    # #appendFittedUncertaintyToFile(allh)
-
-#    loadHists("kfactor_nonVBF_zjet",allh_nonvbf_jet,bins_jetpt)
 
 main()
 

@@ -1,8 +1,6 @@
 import ROOT
 import sys, os
 
-
-
 def main():
 
     infiles_vbf = [ "kfactor_VBF_zjet", "kfactor_VBF_wjet"]
@@ -32,11 +30,6 @@ def main():
             FactDown = []
             PDFUp = []
             PDFDown = []
-
-            #    infiles = [ "kfactor_VTR_wjet"]
-            #infiles = [ "kfactor_VBF_wjet"]
-
-            #   infiles = [ "kfactor_VTR_zjet"]
 
             filelist.append(ROOT.TFile.Open(sys.argv[1] + "/" + f + ".root","UPDATE"))
             fin = filelist[-1]
@@ -74,17 +67,12 @@ def main():
                     PDFDown.append(pd)
 
 
-                #           print(FactDown[-1].Integral(), FactUp[-1].Integral())
-                #
-
             #Take correction from bin 5
-            ##filelist[-1].cd("kfactors_shape_Renorm_Up/")
             origdir = filelist[-1].GetDirectory("/")
             filelist[-1].GetDirectory("/kfactors_shape_Renorm_Up/").cd()
             for n,renorm in enumerate(RenormUp):
                 binchoice = 6
                 correction = renorm.GetBinContent(binchoice)-nominal[n].GetBinContent(binchoice)
-                #print("corr = ",	correction)
                 for b in range(1,6):
                     renorm.SetBinContent(b, correction + nominal[n].GetBinContent(b))
                 if (region == 0):
@@ -97,7 +85,6 @@ def main():
             for n,renorm in enumerate(RenormDown):
                 binchoice = 6
                 correction = renorm.GetBinContent(binchoice)-nominal[n].GetBinContent(binchoice)
-                #print("corr = ",	correction)
                 for b in range(1,6):
                     renorm.SetBinContent(b, correction + nominal[n].GetBinContent(b))
                 if (region == 0):
