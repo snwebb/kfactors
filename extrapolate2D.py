@@ -70,15 +70,15 @@ def main():
             dirlist = ["Renorm_Up/" ,"Renorm_Down/" , "Fact_Up/", "Fact_Down/",  "PDF_Up/", "PDF_Down/"]
             for d,direc in enumerate(dirlist):
                 filelist[-1].GetDirectory("/kfactors_shape_" + direc).cd()
-
                 syst = Systs[d]
                 binchoice = 6
-                #loop over mjj bins
+
+                #loop over y-axis bins
                 for y in range(1,syst.GetNbinsY()+1):
                     correction = syst.GetBinContent(binchoice,y)-nominal[0].GetBinContent(binchoice,y)
                     for b in range(1,6):
                         syst.SetBinContent(b, y, correction + nominal[0].GetBinContent(b,y))
-
+                    
                 if (region == "vbf"):
                     for x in range(1,syst.GetNbinsX()+1):
                         syst.SetBinContent(x,1,syst.GetBinContent(x,2))
