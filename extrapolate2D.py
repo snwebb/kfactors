@@ -43,9 +43,8 @@ def main():
             Systs.append(pu)
             Systs.append(pd)
 
-            #Take correction from bin 6
-
             origdir = filelist[-1].GetDirectory("/")
+
             filelist[-1].GetDirectory("/kfactors_shape/").cd()
             for n,nom in enumerate(nominal):
                 
@@ -62,16 +61,17 @@ def main():
                     for y in range(1,nom.GetNbinsY()+1):
                         if ( nom.GetBinContent(x,y) <= 0 ):
                             nom.SetBinContent(x,y,1.)
+
+                if (region == "nonvbf"):
+                    nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
                 
-                nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
-
             origdir.cd()
-
+            
             dirlist = ["Renorm_Up/" ,"Renorm_Down/" , "Fact_Up/", "Fact_Down/",  "PDF_Up/", "PDF_Down/"]
             for d,direc in enumerate(dirlist):
                 filelist[-1].GetDirectory("/kfactors_shape_" + direc).cd()
                 syst = Systs[d]
-                binchoice = 6
+                binchoice = 6  #Take correction from bin 6
 
                 #loop over y-axis bins
                 for y in range(1,syst.GetNbinsY()+1):
@@ -92,11 +92,33 @@ def main():
                     for y in range(1,syst.GetNbinsY()+1):
                         if ( syst.GetBinContent(x,y) <= 0 ):
                             syst.SetBinContent(x,y,1.)
-                
+
+
+                #For VBF divide by the nominal k-factor:
+                if (region == "vbf" or region == "VTR"):
+                    syst.Divide(nominal[0])
+                    syst.GetZaxis().SetRangeUser(0.85,1.15)
+
                 syst.Write("kfactor_" + region,ROOT.TObject.kOverwrite )
 
                 origdir.cd()
 
+
+            filelist[-1].GetDirectory("/kfactors_shape/").cd()
+            for n,nom in enumerate(nominal):
+                
+                if (region == "vbf" or region == "VTR"):
+                    #Set all k-factors to 1
+                    for x in range(1,nom.GetNbinsX()+1):
+                        for y in range(1,nom.GetNbinsY()+1):
+                            nom.SetBinContent(x,y,1.)
+
+                    nom.GetZaxis().SetRangeUser(0.85,1.15)
+                    nom.Write("kfactor_" + region ,ROOT.TObject.kOverwrite )
+
+
+            origdir.cd()
+            
             fin.Close()
 
             

@@ -143,7 +143,7 @@ def drawStandardKFactorPlots(hists,bins,plotname="plot"):
     haxis = ROOT.TH1D("base",";"+xaxis+";NLO/LO k-factor",1,0,maximum)
 
     can = ROOT.TCanvas("c1","c",800,600)
-    can = setupCanvas(can, haxis, ymin = 0.4, ymax = 2.2, xtitle = xaxis)
+    can = setupCanvas(can, haxis, ymin = 0.4, ymax = 4.2, xtitle = xaxis)
 
     for i,hist in enumerate(hists[0]):
         if ( analysis == "vbf" ):
@@ -261,8 +261,8 @@ def loadHists(infile,allh,bins):
 def main():
 
     name_nonvbf = "kfactor_nonVBF"
-    name_vbf = "kfactor_VBF"
-    name_vtr = "kfactor_VTR"
+    name_vbf = "2Dkfactor_VBF"
+    name_vtr = "2Dkfactor_VTR"
 
     global base,analysis
 
@@ -275,7 +275,7 @@ def main():
     #VBF W
     allh_vbf = []
     # load the relevant 2D k-factor histograms
-    loadHists("2Dkfactor_VBF_wjet",allh_vbf,bins_index_vbf) 
+    loadHists(name_vbf+"_wjet",allh_vbf,bins_index_vbf) 
     # calculate the uncertainty
     calculateUncertainty(allh_vbf,bins_vbf) 
     # draw the note uncertainty plots
@@ -285,7 +285,7 @@ def main():
     
     #VBF DY
     allh_vbf_z = []
-    loadHists("2Dkfactor_VBF_zjet",allh_vbf_z,bins_index_vbf)
+    loadHists(name_vbf+"_zjet",allh_vbf_z,bins_index_vbf)
     calculateUncertainty(allh_vbf_z,bins_vbf)
     drawUncertaintyPlots(allh_vbf_z,bins_vbf,"vbf_z")
     drawStandardKFactorPlots(allh_vbf_z,bins_vbf,"kfactor_VBF_zjet_born_default")
@@ -293,7 +293,7 @@ def main():
 
     #VBF ZNN
     allh_vbf_znn = []
-    loadHists("2Dkfactor_VBF_znn",allh_vbf_znn,bins_index_vbf)
+    loadHists(name_vbf+"_znn",allh_vbf_znn,bins_index_vbf)
     calculateUncertainty(allh_vbf_znn,bins_vbf)
     drawUncertaintyPlots(allh_vbf_znn,bins_vbf,"vbf_znn")
     drawStandardKFactorPlots(allh_vbf_znn,bins_vbf,"kfactor_VBF_znn_born_default")
@@ -319,17 +319,17 @@ def main():
     bins_index_vtr= [1]
     bins_vtr= ["900_5000"]
 
-    loadHists("2Dkfactor_VTR_wjet",allh_vbf,bins_index_vtr)
+    loadHists(name_vtr+"_wjet",allh_vbf,bins_index_vtr)
     calculateUncertainty(allh_vbf,bins_vtr)
     drawUncertaintyPlots(allh_vbf,bins_vtr,"vtr_w")
     drawStandardKFactorPlots(allh_vbf,bins_vtr,"kfactor_VTR_wjet_born_default")
     allh_vbf = []
-    loadHists("2Dkfactor_VTR_zjet",allh_vbf,bins_index_vtr)
+    loadHists(name_vtr+"_zjet",allh_vbf,bins_index_vtr)
     calculateUncertainty(allh_vbf,bins_vtr)
     drawUncertaintyPlots(allh_vbf,bins_vtr,"vtr_z")
     drawStandardKFactorPlots(allh_vbf,bins_vtr,"kfactor_VTR_zjet_born_default")
     allh_vbf = []
-    loadHists("2Dkfactor_VTR_znn",allh_vbf,bins_index_vtr)
+    loadHists(name_vtr+"_znn",allh_vbf,bins_index_vtr)
     calculateUncertainty(allh_vbf,bins_vtr)
     drawUncertaintyPlots(allh_vbf,bins_vtr,"vtr_znn")
     drawStandardKFactorPlots(allh_vbf,bins_vtr,"kfactor_VTR_znn_born_default")

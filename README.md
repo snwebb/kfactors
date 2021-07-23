@@ -17,6 +17,7 @@ There are also `plot_wz.py` and `plot_wz2D.py` which plots the uncertainty on th
 ## Correcting the k-factors
 
 In order to produce working k-factor files for input to `CHIP` the 2D k-factor files created in the https://github.com/snwebb/higgsinvisible respository need to have some post-processing run on them to correct for missing uncertainty information and to remove 0 values in some bins (to avoid crashes in `FAST`).
+For the VBF analysis, which now uses the NLO samples directly the program now also sets the nominal scale factors to 1 and divides the uncertainty histogram by the (old) nominal values.
 
 This is run like:
 -  `python3 extrapolate2D.py path_to_input_directory`
